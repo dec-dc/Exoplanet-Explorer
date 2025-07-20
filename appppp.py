@@ -297,25 +297,54 @@ model = load_model()
 
 # Helper to display subtitle locally for each chart
 def display_chart_subtitle(chart_key, description):
+    import streamlit.components.v1 as components
+
     # Initialise a specific subtitle for this chart if it doesn't exist
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
 
-    # Button for all platforms: sets subtitle + speaks (on Android/Windows)
+    # Cross-platform Speak button (doesn't work on iOS)
     if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
         st.session_state[f'subtitle_{chart_key}'] = description
-        speak_text_via_browser(description, rate=speech_rate)
 
-    # Separate iOS button: speaks the same description
-    if is_ios():
-        if st.button("🔊 Speak (iOS only) & Show Subtitle", key=f"tts_ios_streamlit_{chart_key}"):
-            st.session_state[f'subtitle_{chart_key}'] = description
-            speak_text_for_ios(description, rate=speech_rate)
+        # This runs only on non-iOS
+        escaped_text = description.replace("'", "\\'").replace("\n", " ").replace("`", "'")
+        components.html(f"""
+            <script>
+                const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                if (!is_ios) {{
+                    const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(msg);
+                }}
+            </script>
+        """, height=0)
 
-    # Show subtitle on screen (on *all* platforms)
+    # Subtitle display
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
 
+    # Add iOS-specific Speak button using raw HTML
+    components.html(f"""
+        <div id="ios-tts-container"></div>
+        <script>
+            const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (is_ios) {{
+                const container = document.getElementById("ios-tts-container");
+                const button = document.createElement("button");
+                button.textContent = "🔊 Speak (iOS)";
+                button.style.fontSize = "16px";
+                button.style.marginTop = "10px";
+                button.onclick = function() {{
+                    const msg = new SpeechSynthesisUtterance("{description}");
+                    msg.rate = 1.0;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(msg);
+                }};
+                container.appendChild(button);
+            }}
+        </script>
+    """, height=100)
 
 
 # --- Function to fetch a random exoplanet from NASA Exoplanet Archive ---
@@ -363,25 +392,28 @@ def fetch_random_exoplanet():
 # --- Chart Functions ---
 # Function to plot average host star temperature by discovery method
 # This function creates a bar chart showing the average temperature of host stars grouped by discovery method.
-def display_chart_subtitle(chart_key, description):
-    # Initialise a subtitle slot for this chart
-    if f'subtitle_{chart_key}' not in st.session_state:
-        st.session_state[f'subtitle_{chart_key}'] = ""
+def plot_avg_temp_by_discovery(df):
+    st.subheader("Average Host Star Temperature by Discovery Method")
+    subset = df[['Discovery method', 'star temp (clean)']].dropna()
+    avg_temps = subset.groupby('Discovery method')['star temp (clean)'].mean().sort_values(ascending=False)
 
-    # Cross-platform "Describe Chart" button
-    if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
-        st.session_state[f'subtitle_{chart_key}'] = description
-        speak_text_via_browser(description, rate=speech_rate)
+    fig = px.bar(avg_temps, x=avg_temps.index, y=avg_temps.values,
+                 labels={'x': 'Discovery Method', 'y': 'Average Star Temperature (K)'},
+                 color=avg_temps.values, color_continuous_scale=px.colors.sequential.Mint)
+    fig.update_layout(xaxis_tickangle=-45)
+    
+    fig.update_layout(get_chart_styling(theme, dark_mode)) 
 
-    # iOS-specific button (only shows on iOS)
-    if is_ios():
-        if st.button("🔊 Speak (iOS only) & Show Subtitle", key=f"tts_ios_{chart_key}"):
-            st.session_state[f'subtitle_{chart_key}'] = description
-            speak_text_for_ios(description, rate=speech_rate)
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        top_method = avg_temps.idxmax()
+        st.metric("🔥 Hottest Method", top_method, f"{int(avg_temps.max())} K")
 
-    # Shared subtitle display
-    if st.session_state[f'subtitle_{chart_key}']:
-        st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
+    description = "This bar chart shows the average host star temperature for each discovery method."
+    
+    display_chart_subtitle("avg_temp", description)
 
 # --- Chart Functions ---
 # Function to plot average host star temperature by discovery method
@@ -408,12 +440,11 @@ def plot_avg_temp_by_discovery(df):
         # Description for TTS and subtitle
     description = "This bar chart shows the average host star temperature for each discovery method."
 
-    # iOS-specific speech button
-    if is_ios():
-        speak_text_for_ios(description, rate=speech_rate)
-
     # Normal subtitle and TTS button
     display_chart_subtitle("avg_temp", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
 
 # --- Function to plot planet mass vs host star temperature scatter plot
 # This function creates a scatter plot showing the relationship between planet mass and host star temperature.
