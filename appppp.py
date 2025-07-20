@@ -118,25 +118,51 @@ def get_chart_styling(current_theme, is_dark_mode):
 
 # --- Browser-based TTS Function with Controls ---
 def speak_text_via_browser(text, rate=1.0):
-    """Generates HTML/JS to speak text using the browser's speech synthesis."""
     escaped_text = text.replace("'", "\\'").replace("\n", " ").replace("`", "'")
-    
+
     components.html(f"""
-        <div id="tts-container"></div>
         <script>
-            var msg = new SpeechSynthesisUtterance('{escaped_text}');
-            msg.rate = {rate};
-            
-            function speak() {{
-                window.speechSynthesis.cancel(); // Stop any previous speech
+            // Check if the device is iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+            if (!isIOS) {{
+                const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                msg.rate = {rate};
+                window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(msg);
             }}
-
-            // Automatically speak when the component loads
-            speak();
-
         </script>
-    """, height=0) 
+    """, height=0)
+
+# --- iOS-specific TTS Function ---
+# This function is specifically for iOS devices, as they handle TTS differently.
+def speak_text_for_ios(text, rate=1.0):
+    escaped_text = text.replace("'", "\\'").replace("\n", " ").replace("`", "'")
+
+    components.html(f"""
+        <div id="ios-tts-container"></div>
+        <script>
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+            if (isIOS) {{
+                const container = document.getElementById("ios-tts-container");
+                const button = document.createElement("button");
+                button.textContent = "🔊 Speak (iOS)";
+                button.style.fontSize = "16px";
+                button.style.marginTop = "10px";
+
+                button.onclick = function() {{
+                    const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                    msg.rate = {rate};
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(msg);
+                }};
+
+                container.appendChild(button);
+            }}
+        </script>
+    """, height=100)
+
 
 # --- Data Loading ---
 @st.cache_data
@@ -176,7 +202,7 @@ def display_chart_subtitle(chart_key, description):
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
 
-    # Button triggers both the subtitle and the voice
+    # Streamlit button triggers subtitle + speech (non-iOS)
     if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
         st.session_state[f'subtitle_{chart_key}'] = description
         speak_text_via_browser(description, rate=speech_rate)
@@ -185,7 +211,11 @@ def display_chart_subtitle(chart_key, description):
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
 
+    # Add fallback iOS-only speech button
+    speak_text_for_ios(description, rate=speech_rate)
 
+
+# --- Function to fetch a random exoplanet from NASA Exoplanet Archive ---
 def fetch_random_exoplanet():
     """
     Fetches a random exoplanet's details from the NASA Exoplanet Archive TAP service.
