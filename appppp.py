@@ -54,6 +54,11 @@ with st.sidebar:
         st.session_state["is_ios_detected"] = not st.session_state["is_ios_detected"]
         st.write(f"**iOS Simulated:** {st.session_state['is_ios_detected']}")
 
+    # Toggle button (e.g. in the sidebar)
+    if st.button("Toggle iOS Simulation", key="sidebar_ios_toggle"):
+        st.session_state["is_ios_detected"] = not st.session_state["is_ios_detected"]
+        st.write(f"**iOS Simulated:** {st.session_state['is_ios_detected']}")
+
 
 # --- Apply Global Streamlit UI Theme based on dark_mode ---
 theme = "plotly_dark" if dark_mode else "plotly_white" 
