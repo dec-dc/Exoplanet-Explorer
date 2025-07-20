@@ -123,9 +123,9 @@ def speak_text_via_browser(text, rate=1.0):
     components.html(f"""
         <script>
             // Check if the device is iOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-            if (!isIOS) {{
+            if (!is_ios) {{
                 const msg = new SpeechSynthesisUtterance('{escaped_text}');
                 msg.rate = {rate};
                 window.speechSynthesis.cancel();
@@ -133,6 +133,10 @@ def speak_text_via_browser(text, rate=1.0):
             }}
         </script>
     """, height=0)
+
+# --- Function to check if the device is iOS ---
+def is_ios():
+    return st.session_state.get("is_ios_detected", False)
 
 # --- iOS-specific TTS Function ---
 # This function is specifically for iOS devices, as they handle TTS differently.
@@ -142,9 +146,9 @@ def speak_text_for_ios(text, rate=1.0):
     components.html(f"""
         <div id="ios-tts-container"></div>
         <script>
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-            if (isIOS) {{
+            if (is_ios) {{
                 const container = document.getElementById("ios-tts-container");
                 const button = document.createElement("button");
                 button.textContent = "🔊 Speak (iOS)";
