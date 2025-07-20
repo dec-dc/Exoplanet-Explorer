@@ -9,11 +9,11 @@ import requests
 import random
 
 
-# --- Password Protection ---
-password = st.text_input("Enter password to access the dashboard:", type="password")
-if password != "Exoplanet25":
-    st.warning("Incorrect password. Try again.")
-    st.stop()
+# # --- Password Protection ---
+# password = st.text_input("Enter password to access the dashboard:", type="password")
+# if password != "Exoplanet25":
+#     st.warning("Incorrect password. Try again.")
+#     st.stop()
 
 # --- App Configuration ---
 st.set_page_config(layout="wide")
