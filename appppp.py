@@ -296,27 +296,27 @@ model = load_model()
 # --- Charting Functions (Updated to use global state for styling and local subtitle) ---
 
 # Helper to display subtitle locally for each chart
-def display_chart_subtitle(chart_key, description):
+def display_chart_subtitle(chart_key, description, speech_rate=1.0):
     # Initialise a specific subtitle for this chart if it doesn't exist
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
 
-    # One consistent Streamlit button (white, rounded)
+    # One native Streamlit button (white/curved style)
     if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
         st.session_state[f'subtitle_{chart_key}'] = description
 
-        # Inject platform-aware JavaScript for TTS
+        # JavaScript-only speech synthesis runs invisibly (no extra button)
+        escaped_text = description.replace("'", "\\'").replace("\n", " ").replace("`", "'")
         components.html(f"""
             <script>
-                const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                const msg = new SpeechSynthesisUtterance("{description}");
-                msg.rate = 1.0;
+                const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                msg.rate = {speech_rate};
                 window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(msg);
             </script>
         """, height=0)
 
-    # Show subtitle if set
+    # Show subtitle below chart if set
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
 
