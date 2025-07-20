@@ -303,48 +303,49 @@ def display_chart_subtitle(chart_key, description):
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
 
-    # Cross-platform Speak button (doesn't work on iOS)
+    # Streamlit button (non-iOS)
     if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
         st.session_state[f'subtitle_{chart_key}'] = description
 
-        # This runs only on non-iOS
+        # Non-iOS speech synthesis
         escaped_text = description.replace("'", "\\'").replace("\n", " ").replace("`", "'")
         components.html(f"""
             <script>
                 const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
                 if (!is_ios) {{
                     const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                    msg.rate = 1.0;
                     window.speechSynthesis.cancel();
                     window.speechSynthesis.speak(msg);
                 }}
             </script>
         """, height=0)
 
-    # Subtitle display
+    # Show subtitle if set
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
 
-    # Add iOS-specific Speak button using raw HTML
-    components.html(f"""
-        <div id="ios-tts-container"></div>
-        <script>
-            const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (is_ios) {{
-                const container = document.getElementById("ios-tts-container");
-                const button = document.createElement("button");
-                button.textContent = "🔊 Speak (iOS)";
-                button.style.fontSize = "16px";
-                button.style.marginTop = "10px";
-                button.onclick = function() {{
-                    const msg = new SpeechSynthesisUtterance("{description}");
-                    msg.rate = 1.0;
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(msg);
-                }};
-                container.appendChild(button);
-            }}
-        </script>
-    """, height=100)
+        # iOS-only speak button (added only if subtitle is set)
+        components.html(f"""
+            <script>
+                const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                if (is_ios && !document.getElementById("ios-tts-btn-{chart_key}")) {{
+                    const container = document.currentScript.parentElement;
+                    const button = document.createElement("button");
+                    button.id = "ios-tts-btn-{chart_key}";
+                    button.textContent = "🔊 Speak (iOS)";
+                    button.style.fontSize = "16px";
+                    button.style.marginTop = "10px";
+                    button.onclick = function() {{
+                        const msg = new SpeechSynthesisUtterance("{description}");
+                        msg.rate = 1.0;
+                        window.speechSynthesis.cancel();
+                        window.speechSynthesis.speak(msg);
+                    }};
+                    container.appendChild(button);
+                }}
+            </script>
+        """, height=50)
 
 
 # --- Function to fetch a random exoplanet from NASA Exoplanet Archive ---
