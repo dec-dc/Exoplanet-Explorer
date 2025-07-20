@@ -131,7 +131,7 @@ components.html("""
 if "is_ios" not in st.session_state:
     st.session_state["is_ios"] = False
 
-st.query_params() # This line is to ensure the session state is initialised correctly
+st.experimental_get_query_params() # This line is to ensure the session state is initialised correctly
 
 # Listen and store result
 st.markdown("""
