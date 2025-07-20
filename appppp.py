@@ -120,6 +120,29 @@ def get_chart_styling(current_theme, is_dark_mode):
 
     return layout_updates
 
+# Inject browser JS to detect iOS and set it in session_state
+components.html("""
+    <script>
+        const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        window.parent.postMessage({ type: 'SET_IOS', value: is_ios }, '*');
+    </script>
+""", height=0)
+
+# Listen and store result
+st.markdown("""
+<script>
+    window.addEventListener("message", (event) => {
+        if (event.data.type === 'SET_IOS') {
+            window.streamlitWebSocket.send(JSON.stringify({
+                type: "streamlit:setComponentValue",
+                key: "is_ios_detected",
+                value: event.data.value
+            }));
+        }
+    });
+</script>
+""", unsafe_allow_html=True)
+
 # --- Browser-based TTS Function with Subtitles ---
 # This function uses the browser's built-in TTS capabilities to speak text with subtitles.
 def speak_text_with_subtitles(text, rate=1.0):
