@@ -230,44 +230,29 @@ def speak_text_for_ios(text, rate=1.0):
     components.html(f"""
         <div id="ios-tts-container"></div>
         <script>
-            const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-            if (is_ios) {{
+            if (isIOS) {{
                 const container = document.getElementById("ios-tts-container");
-                // Clear previous button to prevent duplicates on reruns
-                while(container.firstChild) {{
-                    container.removeChild(container.firstChild);
-                }}
-
                 const button = document.createElement("button");
                 button.textContent = "🔊 Speak (iOS)";
                 button.style.fontSize = "16px";
                 button.style.marginTop = "10px";
-                button.id = "ios-speak-button"; 
+                button.style.padding = "8px 12px";
+                button.style.borderRadius = "6px";
+                button.style.backgroundColor = "#2E8B57";
+                button.style.color = "white";
+                button.style.border = "none";
+                button.style.cursor = "pointer";
 
-                // Attach the event listener to the button
                 button.onclick = function() {{
-                    // Make msg a global variable within this iframe's context
-                    window.currentIOSSppechMsg = new SpeechSynthesisUtterance('{escaped_text}');
-                    window.currentIOSSppechMsg.rate = {rate};
-
-                    // Clear any previous speech queue
+                    const msg = new SpeechSynthesisUtterance('{escaped_text}');
+                    msg.rate = {rate};
                     window.speechSynthesis.cancel();
-
-                    // Speak the new message
-                    window.speechSynthesis.speak(window.currentIOSSppechMsg);
-
-                    // Optional: Add event listeners for debugging
-                    window.currentIOSSppechMsg.onend = function(event) {{
-                        console.log('Speech finished on iOS button.');
-                    }};
-                    window.currentIOSSppechMsg.onerror = function(event) {{
-                        console.error('Speech error on iOS button:', event.error);
-                    }};
+                    window.speechSynthesis.speak(msg);
                 }};
 
                 container.appendChild(button);
-                console.log("iOS speak button rendered.");
             }}
         </script>
     """, height=100)
