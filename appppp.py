@@ -218,10 +218,7 @@ def display_chart_subtitle(chart_key, description):
 
     # Separate iOS button: speaks the same description
     if is_ios():
-        # Display an iOS-specific button that when clicked, both updates session state
-        # and triggers the speak_text_for_ios function.
-        # We need a Streamlit button here to capture the click and update session state.
-        if st.button("🔊 Speak (iOS only)", key=f"tts_ios_{chart_key}_button"):
+        if st.button("🔊 Speak (iOS only) & Show Subtitle", key=f"tts_ios_streamlit_{chart_key}"):
             st.session_state[f'subtitle_{chart_key}'] = description
             speak_text_for_ios(description, rate=speech_rate)
 
