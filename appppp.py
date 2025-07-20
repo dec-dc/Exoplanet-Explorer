@@ -202,17 +202,26 @@ def display_chart_subtitle(chart_key, description):
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
 
-    # Streamlit button triggers subtitle + speech (non-iOS)
+    # Button for all platforms: sets subtitle + speaks (on Android/Windows)
     if st.button("🔊 Describe Chart", key=f"tts_{chart_key}"):
         st.session_state[f'subtitle_{chart_key}'] = description
         speak_text_via_browser(description, rate=speech_rate)
 
-    # Show subtitle below chart if set
+    # Separate iOS button: speaks the same description
+    if is_ios() and st.button("🔊 Speak (iOS only)", key=f"tts_ios_{chart_key}"):
+        st.session_state[f'subtitle_{chart_key}'] = description  
+        st.components.v1.html(f"""
+            <script>
+                var msg = new SpeechSynthesisUtterance("{description}");
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(msg);
+            </script>
+        """, height=0)
+
+    # Show subtitle on screen (on *all* platforms)
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
 
-    # Add fallback iOS-only speech button
-    speak_text_for_ios(description, rate=speech_rate)
 
 
 # --- Function to fetch a random exoplanet from NASA Exoplanet Archive ---
