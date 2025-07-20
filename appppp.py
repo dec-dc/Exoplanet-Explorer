@@ -48,10 +48,11 @@ with st.sidebar:
 
     st.markdown("---")
     st.subheader("📱 Device Simulation")
+
     # iOS Simulation Toggle to sidebar's top level ---
     if st.button("Toggle iOS Simulation", key="sidebar_ios_toggle"):
         st.session_state["is_ios_detected"] = not st.session_state["is_ios_detected"]
-    st.write(f"**iOS Simulated:** {st.session_state['is_ios_detected']}")
+        st.write(f"**iOS Simulated:** {st.session_state['is_ios_detected']}")
 
 
 # --- Apply Global Streamlit UI Theme based on dark_mode ---
