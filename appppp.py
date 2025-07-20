@@ -22,6 +22,10 @@ st.set_page_config(layout="wide")
 if 'presentation_mode' not in st.session_state:
     st.session_state.presentation_mode = False # Default to off
 
+# --- Function to check if the device is iOS ---
+def is_ios():
+    return st.session_state.get("is_ios_detected", False)
+
 # --- Sidebar Settings ---
 with st.sidebar:
     st.title("🔧 Settings")
@@ -41,6 +45,13 @@ with st.sidebar:
         value=st.session_state.presentation_mode, # Use current session state value
         help="Adjusts chart fonts, colors, and layouts for better visibility during presentations."
     )
+
+    st.markdown("---")
+    st.subheader("📱 Device Simulation")
+    # iOS Simulation Toggle to sidebar's top level ---
+    if st.button("Toggle iOS Simulation", key="sidebar_ios_toggle"):
+        st.session_state["is_ios_detected"] = not st.session_state["is_ios_detected"]
+    st.write(f"**iOS Simulated:** {st.session_state['is_ios_detected']}")
 
 
 # --- Apply Global Streamlit UI Theme based on dark_mode ---
@@ -134,7 +145,6 @@ def speak_text_via_browser(text, rate=1.0):
         </script>
     """, height=0)
 
-# --- Function to check if the device is iOS ---
 def is_ios():
     return st.session_state.get("is_ios_detected", False)
 
@@ -294,6 +304,7 @@ def plot_avg_temp_by_discovery(df):
 
     description = "This bar chart shows the average host star temperature for each discovery method."
     display_chart_subtitle("avg_temp", description)
+
 
 # --- Function to plot planet mass vs host star temperature scatter plot
 # This function creates a scatter plot showing the relationship between planet mass and host star temperature.
