@@ -310,13 +310,27 @@ def display_chart_subtitle(chart_key, description):
         # Speak on all platforms (including iOS) using invisible JS
         escaped_text = description.replace("'", "\\'").replace("\n", " ").replace("`", "'")
         components.html(f"""
-            <script>
-                const msg = new SpeechSynthesisUtterance('{escaped_text}');
+            <div id="tts-button-container" style="margin-top: 10px;">
+            <button id="tts-button" style="
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+        ">🔊 Describe Chart</button>
+
+        <script>
+            document.getElementById("tts-button").onclick = function() {{
+                const msg = new SpeechSynthesisUtterance("{description}");
                 msg.rate = 1.0;
                 window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(msg);
-            </script>
-        """, height=0)
+            }};
+        </script>
+    </div>
+""", height=120)
+
 
     # Show subtitle
     if st.session_state[f'subtitle_{chart_key}']:
