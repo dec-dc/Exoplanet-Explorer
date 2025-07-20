@@ -134,14 +134,24 @@ def speak_text_via_browser(text, rate=1.0):
 
     components.html(f"""
         <script>
-            // Check if the device is iOS
             const is_ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
             if (!is_ios) {{
-                const msg = new SpeechSynthesisUtterance('{escaped_text}');
-                msg.rate = {rate};
+                
+                window.currentSpeechMsg = new SpeechSynthesisUtterance('{escaped_text}');
+                window.currentSpeechMsg.rate = {rate};
+                
                 window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(msg);
+
+                window.speechSynthesis.speak(window.currentSpeechMsg);
+
+                window.currentSpeechMsg.onend = function(event) {{
+                    console.log('Speech finished in browser.');
+                }};
+                window.currentSpeechMsg.onerror = function(event) {{
+                    console.error('Speech error in browser:', event.error);
+                }};
+            }} else {{
+                console.log("Not speaking via browser for iOS device.");
             }}
         </script>
     """, height=0)
@@ -161,6 +171,7 @@ def speak_text_for_ios(text, rate=1.0):
 
             if (is_ios) {{
                 const container = document.getElementById("ios-tts-container");
+                // Clear previous button to prevent duplicates on reruns
                 while(container.firstChild) {{
                     container.removeChild(container.firstChild);
                 }}
@@ -171,14 +182,29 @@ def speak_text_for_ios(text, rate=1.0):
                 button.style.marginTop = "10px";
                 button.id = "ios-speak-button"; 
 
+                // Attach the event listener to the button
                 button.onclick = function() {{
-                    const msg = new SpeechSynthesisUtterance('{escaped_text}');
-                    msg.rate = {rate};
+                    // Make msg a global variable within this iframe's context
+                    window.currentIOSSppechMsg = new SpeechSynthesisUtterance('{escaped_text}');
+                    window.currentIOSSppechMsg.rate = {rate};
+
+                    // Clear any previous speech queue
                     window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(msg);
+
+                    // Speak the new message
+                    window.speechSynthesis.speak(window.currentIOSSppechMsg);
+
+                    // Optional: Add event listeners for debugging
+                    window.currentIOSSppechMsg.onend = function(event) {{
+                        console.log('Speech finished on iOS button.');
+                    }};
+                    window.currentIOSSppechMsg.onerror = function(event) {{
+                        console.error('Speech error on iOS button:', event.error);
+                    }};
                 }};
 
                 container.appendChild(button);
+                console.log("iOS speak button rendered.");
             }}
         </script>
     """, height=100)
