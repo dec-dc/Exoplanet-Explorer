@@ -128,6 +128,11 @@ components.html("""
     </script>
 """, height=0)
 
+if "is_ios" not in st.session_state:
+    st.session_state["is_ios"] = False
+
+st.experimental_get_query_params() # This line is to ensure the session state is initialised correctly
+
 # Listen and store result
 st.markdown("""
 <script>
