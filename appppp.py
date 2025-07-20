@@ -150,10 +150,15 @@ def speak_text_for_ios(text, rate=1.0):
 
             if (is_ios) {{
                 const container = document.getElementById("ios-tts-container");
+                while(container.firstChild) {{
+                    container.removeChild(container.firstChild);
+                }}
+
                 const button = document.createElement("button");
                 button.textContent = "🔊 Speak (iOS)";
                 button.style.fontSize = "16px";
                 button.style.marginTop = "10px";
+                button.id = "ios-speak-button"; 
 
                 button.onclick = function() {{
                     const msg = new SpeechSynthesisUtterance('{escaped_text}');
@@ -212,15 +217,13 @@ def display_chart_subtitle(chart_key, description):
         speak_text_via_browser(description, rate=speech_rate)
 
     # Separate iOS button: speaks the same description
-    if is_ios() and st.button("🔊 Speak (iOS only)", key=f"tts_ios_{chart_key}"):
-        st.session_state[f'subtitle_{chart_key}'] = description  
-        st.components.v1.html(f"""
-            <script>
-                var msg = new SpeechSynthesisUtterance("{description}");
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(msg);
-            </script>
-        """, height=0)
+    if is_ios():
+        # Display an iOS-specific button that when clicked, both updates session state
+        # and triggers the speak_text_for_ios function.
+        # We need a Streamlit button here to capture the click and update session state.
+        if st.button("🔊 Speak (iOS only)", key=f"tts_ios_{chart_key}_button"):
+            st.session_state[f'subtitle_{chart_key}'] = description
+            speak_text_for_ios(description, rate=speech_rate)
 
     # Show subtitle on screen (on *all* platforms)
     if st.session_state[f'subtitle_{chart_key}']:
