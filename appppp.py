@@ -297,6 +297,9 @@ model = load_model()
 
 # Helper to display subtitle locally for each chart
 def display_chart_subtitle(chart_key, description, speech_rate=1.0):
+    import streamlit as st
+    import streamlit.components.v1 as components
+
     # Initialise a specific subtitle for this chart if it doesn't exist
     if f'subtitle_{chart_key}' not in st.session_state:
         st.session_state[f'subtitle_{chart_key}'] = ""
