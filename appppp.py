@@ -415,7 +415,14 @@ def plot_avg_temp_by_discovery(df):
         top_method = avg_temps.idxmax()
         st.metric("🔥 Hottest Method", top_method, f"{int(avg_temps.max())} K")
 
+        # Description for TTS and subtitle
     description = "This bar chart shows the average host star temperature for each discovery method."
+
+    # iOS-specific speech button
+    if is_ios():
+        speak_text_for_ios(description, rate=speech_rate)
+
+    # Normal subtitle and TTS button
     display_chart_subtitle("avg_temp", description)
 
 # --- Function to plot planet mass vs host star temperature scatter plot
