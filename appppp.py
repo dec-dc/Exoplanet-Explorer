@@ -699,17 +699,43 @@ with tab2:
 
     # Prediction
     if st.button("Predict Star Temperature"):
-        prediction = model.predict(input_df)
-        st.session_state.predicted_temp = prediction[0]
+        input_data = {
+            'distance (clean)': distance,
+            'radius (clean)': radius,
+            'Distance_Radius_Interaction': distance * radius,
+            'mass (clean)': mass,
+            'star mass (clean)': star_mass,
+            'Period (days)': period,
+            'Mass_x_Radius': mass * radius,
+            'Log_Period': np.log1p(period)
+        }
 
+    features_ordered = [
+        'distance (clean)', 'radius (clean)', 'Distance_Radius_Interaction',
+        'mass (clean)', 'star mass (clean)', 'Period (days)',
+        'Mass_x_Radius', 'Log_Period'
+    ]
+
+    input_df = pd.DataFrame([input_data], columns=features_ordered)
+    prediction = model.predict(input_df)
+
+    # Save prediction so we can reuse it
+    st.session_state.predicted_temp = prediction[0]
+
+    # ONLY show this AFTER prediction exists
     if "predicted_temp" in st.session_state:
+
         st.success(f"🌟 Predicted Host Star Temperature: **{st.session_state.predicted_temp:.0f} K**")
 
+    description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
+
+    # Combine description + prediction
     spoken_text = (
-        f"Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature. "
+        f"{description} "
         f"The predicted host star temperature is {st.session_state.predicted_temp:.0f} Kelvin."
     )
 
+    # SINGLE BUTTON (works everywhere)
     if st.button("🔊 Speak Prediction"):
         speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
         speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
