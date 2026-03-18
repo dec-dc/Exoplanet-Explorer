@@ -406,6 +406,9 @@ def plot_avg_temp_by_discovery(df):
     description = "This bar chart shows the average host star temperature for each discovery method."
     
     display_chart_subtitle("avg_temp", description)
+    
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
 
 # --- Chart Functions ---
 # Function to plot average host star temperature by discovery method
