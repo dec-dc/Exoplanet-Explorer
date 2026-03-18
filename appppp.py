@@ -379,12 +379,15 @@ def fetch_random_exoplanet():
     except Exception as e: # Catch any other unexpected errors
         print(f"An unexpected error occurred: {e}")
         return None
-
-# --- Helper Function: Chart Subtitle + Describe Button ---
+    
 def display_chart_subtitle(chart_key, description, context="main"):
     unique_key = f"{context}_tts_{chart_key}"
+
+    # Button to describe the chart
     if st.button("🔊 Describe Chart", key=unique_key):
         st.write(description)
+        speak_text_for_ios(description, rate=speech_rate)
+
 
 # --- Chart Functions ---
 # Function to plot average host star temperature by discovery method
