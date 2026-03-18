@@ -383,10 +383,14 @@ def fetch_random_exoplanet():
 def display_chart_subtitle(chart_key, description, context="main"):
     unique_key = f"{context}_tts_{chart_key}"
 
-    # Button to describe the chart
     if st.button("🔊 Describe Chart", key=unique_key):
         st.write(description)
-        speak_text_for_ios(description, rate=speech_rate)
+
+        # ✅ Browser TTS (works on desktop)
+        speak_text_via_browser(description, rate=st.session_state.speech_rate)
+
+        # ✅ iOS fallback
+        speak_text_for_ios(description, rate=st.session_state.speech_rate)
 
 
 # --- Chart Functions ---
