@@ -656,17 +656,23 @@ with tab1:
 
 
 # --- Predict Tab ---
-# --- Predict Tab ---
 with tab2:
     st.header("🔮 Predict Host Star Temperature")
     
-    # 1. The Instructions (Always visible)
+    # 1. The Instructions
     description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
     st.info(description)
 
-    # 2. Prediction Button
+    # 2. CREATE the variables (Sliders)
+    # These must be inside tab2 so 'distance' is defined here
+    distance = st.slider("Distance (pc)", 0.0, 10000.0, 100.0)
+    radius = st.slider("Planetary Radius (Earth Radii)", 0.0, 30.0, 1.0)
+    mass = st.slider("Planetary Mass (Earth Masses)", 0.0, 5000.0, 1.0)
+    star_mass = st.slider("Star Mass (Solar Masses)", 0.0, 10.0, 1.0)
+    period = st.slider("Orbital Period (days)", 0.0, 5000.0, 365.0)
+
+    # 3. The Prediction Button
     if st.button("Predict Star Temperature"):
-        # The math and data processing
         input_data = {
             'distance (clean)': distance,
             'radius (clean)': radius,
@@ -686,22 +692,19 @@ with tab2:
         input_df = pd.DataFrame([input_data], columns=features_ordered)
         prediction = model.predict(input_df)
 
-        # Save the result to memory (Session State)
+        # Save result to session state
         st.session_state.predicted_temp = prediction[0]
 
-    # 3. The Results & Speaking (Only visible AFTER the button is clicked)
+    # 4. Show results and Speak (Only after prediction is made)
     if "predicted_temp" in st.session_state:
         temp = st.session_state.predicted_temp
         st.success(f"🌟 Predicted Host Star Temperature: **{temp:.0f} K**")
 
-        # Create the full sentence to speak
         spoken_text = f"{description} The predicted host star temperature is {temp:.0f} Kelvin."
 
-        # The Button that speaks on all devices (Windows/iOS/Android)
         if st.button("🔊 Speak Prediction"):
             speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
             speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
-
 
 
 
