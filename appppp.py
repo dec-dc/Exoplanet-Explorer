@@ -656,25 +656,25 @@ with tab1:
 
 
 # --- Predict Tab ---
-# --- Predict Tab ---
 with tab2:
     st.header("🔮 Predict Host Star Temperature")
     
+    # Updated description to match your request
     description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
     st.markdown(description)
 
-    # 1. Dropdown for planet selection (Restored)
-    planet_names = [""] + sorted(df["Planet name"].dropna().unique().tolist())
+    # 1. FIXED: Changed 'df' to 'data' to match your loading function
+    planet_names = [""] + sorted(data["Planet name"].dropna().unique().tolist())
     selected_planet = st.selectbox("📌 Choose an exoplanet (optional):", planet_names)
 
-    # Default values logic
+    # Default values
     defaults = {
         'distance': 500.0, 'radius': 1.0, 'mass': 1.0, 
         'star_mass': 1.0, 'period': 365.0
     }
 
     if selected_planet:
-        planet_data = df[df["Planet name"] == selected_planet].iloc[0]
+        planet_data = data[data["Planet name"] == selected_planet].iloc[0]
         defaults['distance'] = float(planet_data.get('distance (clean)', defaults['distance']))
         defaults['radius'] = float(planet_data.get('radius (clean)', defaults['radius']))
         defaults['mass'] = float(planet_data.get('mass (clean)', defaults['mass']))
@@ -690,7 +690,7 @@ with tab2:
         st.markdown("---")
         st.info("🔄 Values below are pre-filled. Feel free to tweak them.")
 
-    # 2. Sliders for input (Now correctly defined before the prediction)
+    # 2. Sliders
     col1, col2 = st.columns(2)
     with col1:
         distance = st.slider("Distance (ly)", 0.0, 12000.0, defaults['distance'])
@@ -700,9 +700,8 @@ with tab2:
         star_mass = st.slider("Host Star Mass (M☉)", 0.1, 5.0, defaults['star_mass'])
         period = st.slider("Orbital Period (days)", 0.1, 5000.0, defaults['period'])
 
-    # 3. The Prediction Logic
+    # 3. Prediction Button (Logic now contained correctly)
     if st.button("Predict Star Temperature"):
-        # This matches the features your model expects
         input_data = {
             'distance (clean)': distance,
             'radius (clean)': radius,
@@ -721,20 +720,18 @@ with tab2:
         
         input_df = pd.DataFrame([input_data], columns=features_ordered)
         prediction = model.predict(input_df)
-
-        # Save result to session state so it stays visible
         st.session_state.predicted_temp = prediction[0]
 
-    # 4. Results and Universal Speech (Only shows after clicking Predict)
+    # 4. Result and Speech (Only shows after a prediction is made)
     if "predicted_temp" in st.session_state:
         temp = st.session_state.predicted_temp
         st.success(f"🌟 Predicted Host Star Temperature: **{temp:.0f} K**")
 
-        # Full text for accessibility
+        # Combine description + prediction for speech
         spoken_text = f"{description} The predicted host star temperature is {temp:.0f} Kelvin."
 
         if st.button("🔊 Speak Prediction"):
-            # Works on Windows/Android/Apple
+            # Universal speech for all devices
             speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
             speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
 
