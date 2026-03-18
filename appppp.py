@@ -27,14 +27,15 @@ with st.sidebar:
     # Dark Mode toggle remains
     dark_mode = st.toggle("🌙 Enable Dark Mode", value=True) 
     font_size = st.slider("🔠 Base Font Size (px)", 12, 28, 16)
-    speech_rate = st.slider("🗣️ Speech Rate", 0.5, 2.0, 1.0, 0.1)
-    st.caption(f"🔊 Current speed: {speech_rate}x")
-
-    st.session_state.speech_rate = st.slider(
+    # Combined into one single slider
+    speech_rate = st.slider(
         "🗣️ Speech Rate", 0.5, 2.0,
         value=st.session_state.get("speech_rate", 1.0),
         step=0.1,
+        key="speech_rate_slider" # Adding a unique key is a safety best-practice
     )
+st.session_state.speech_rate = speech_rate
+st.caption(f"🔊 Current speed: {speech_rate}x")
 
     st.markdown("---")
     st.subheader("📽️ Presentation Tools")
