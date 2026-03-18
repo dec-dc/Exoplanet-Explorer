@@ -380,36 +380,6 @@ def fetch_random_exoplanet():
         print(f"An unexpected error occurred: {e}")
         return None
 
-
-# --- Chart Functions ---
-# Function to plot average host star temperature by discovery method
-# This function creates a bar chart showing the average temperature of host stars grouped by discovery method.
-def plot_avg_temp_by_discovery(df):
-    st.subheader("Average Host Star Temperature by Discovery Method")
-    subset = df[['Discovery method', 'star temp (clean)']].dropna()
-    avg_temps = subset.groupby('Discovery method')['star temp (clean)'].mean().sort_values(ascending=False)
-
-    fig = px.bar(avg_temps, x=avg_temps.index, y=avg_temps.values,
-                 labels={'x': 'Discovery Method', 'y': 'Average Star Temperature (K)'},
-                 color=avg_temps.values, color_continuous_scale=px.colors.sequential.Mint)
-    fig.update_layout(xaxis_tickangle=-45)
-    
-    fig.update_layout(get_chart_styling(theme, dark_mode)) 
-
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.plotly_chart(fig, use_container_width=True)
-    with col2:
-        top_method = avg_temps.idxmax()
-        st.metric("🔥 Hottest Method", top_method, f"{int(avg_temps.max())} K")
-
-    description = "This bar chart shows the average host star temperature for each discovery method."
-    
-    display_chart_subtitle("avg_temp", description)
-    
-    # iOS-specific button for TTS
-    speak_text_for_ios(description, rate=speech_rate)
-
 # --- Chart Functions ---
 # Function to plot average host star temperature by discovery method
 # This function creates a bar chart showing the average temperature of host stars grouped by discovery method.
@@ -702,8 +672,11 @@ with tab2:
         prediction = model.predict(input_df)
         st.success(f"🌟 Predicted Host Star Temperature: **{prediction[0]:.0f} K**")
 
-    description = "This swarm plot shows how discovery methods have evolved over time."
-    display_chart_subtitle("discovery_swarm", description)
+    # Set a relevant description for the prediction
+    predict_description = "This section allows you to predict the host star temperature based on planetary characteristics."
+    
+    # Use a unique key for the prediction subtitle
+    display_chart_subtitle("predict_tab", predict_description)
 
     # Normal subtitle and TTS button
     display_chart_subtitle("Predict", description)
