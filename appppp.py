@@ -30,6 +30,12 @@ with st.sidebar:
     speech_rate = st.slider("🗣️ Speech Rate", 0.5, 2.0, 1.0, 0.1)
     st.caption(f"🔊 Current speed: {speech_rate}x")
 
+    st.session_state.speech_rate = st.slider(
+        "🗣️ Speech Rate", 0.5, 2.0,
+        value=st.session_state.get("speech_rate", 1.0),
+        step=0.1,
+    )
+
     st.markdown("---")
     st.subheader("📽️ Presentation Tools")
     
@@ -125,7 +131,7 @@ components.html("""
 if "is_ios" not in st.session_state:
     st.session_state["is_ios"] = False
 
-st.experimental_get_query_params() # This line is to ensure the session state is initialised correctly
+params = st.query_params # This line is to ensure the session state is initialised correctly
 
 # Listen and store result
 st.markdown("""
@@ -329,6 +335,7 @@ def display_chart_subtitle(chart_key, description):
     # Show subtitle
     if st.session_state[f'subtitle_{chart_key}']:
         st.markdown(f"**🗒️ Subtitle:** {st.session_state[f'subtitle_{chart_key}']}")
+        
 
 
 # --- Function to fetch a random exoplanet from NASA Exoplanet Archive ---
@@ -424,9 +431,6 @@ def plot_avg_temp_by_discovery(df):
         # Description for TTS and subtitle
     description = "This bar chart shows the average host star temperature for each discovery method."
 
-    # Normal subtitle and TTS button
-    display_chart_subtitle("avg_temp", description)
-
     # iOS-specific button for TTS
     speak_text_for_ios(description, rate=speech_rate)
 
@@ -455,6 +459,9 @@ def plot_mass_vs_temp_scatter(df):
     description = "This scatter plot shows the relationship between planet mass and host star temperature."
     display_chart_subtitle("mass_vs_temp", description)
 
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
+
 # --- Function to plot star temperature by star mass using a strip plot
 # This function creates a strip plot showing the distribution of star temperatures across different mass bins.
 def plot_temp_by_mass_strip(df):
@@ -480,6 +487,9 @@ def plot_temp_by_mass_strip(df):
     description = "This strip plot shows star temperatures across different mass bins."
     display_chart_subtitle("temp_by_mass", description)
 
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
+
 # --- Function to plot the distribution of planet radius using a histogram
 # This function creates a histogram showing the distribution of exoplanet radii.
 def plot_radius_distribution_hist(df):
@@ -499,6 +509,9 @@ def plot_radius_distribution_hist(df):
     
     description = "This histogram shows the distribution of exoplanet radii."
     display_chart_subtitle("radius_distribution", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
 
 # --- Function to plot a correlation heatmap of numeric features
 # This function creates a heatmap showing the correlation between numeric features in the dataset.
@@ -525,6 +538,9 @@ def plot_correlation_heatmap(df):
 
     description = "This heatmap shows the correlation between numerical features."
     display_chart_subtitle("correlation_heatmap", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
     
 # --- Function to plot the count of planets by discovery method
 # This function creates a bar chart showing the number of exoplanets discovered by each method.
@@ -542,6 +558,9 @@ def plot_discovery_method_counts(df):
 
     description = "This bar chart shows the number of exoplanets found by each discovery method."
     display_chart_subtitle("discovery_method", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
 
 # --- Function to plot discovery methods over time using a swarm plot
 # This function creates a swarm plot showing how discovery methods have evolved over the years.
@@ -573,6 +592,9 @@ def plot_discovery_swarm_over_time(df):
 
     description = "This swarm plot shows how discovery methods have evolved over time."
     display_chart_subtitle("discovery_swarm", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
 
 
 # --- Main App ---
@@ -676,6 +698,15 @@ with tab2:
         prediction = model.predict(input_df)
         st.success(f"🌟 Predicted Host Star Temperature: **{prediction[0]:.0f} K**")
 
+    description = "This swarm plot shows how discovery methods have evolved over time."
+    display_chart_subtitle("discovery_swarm", description)
+
+    # Normal subtitle and TTS button
+    display_chart_subtitle("Predict", description)
+
+    # iOS-specific button for TTS
+    speak_text_for_ios(description, rate=speech_rate)
+
 
 # --- Discover Tab (Content for tab3 from st.tabs) ---
 with tab3: 
@@ -728,8 +759,13 @@ with tab3:
                 f"Mass: {st_mass} Solar masses. "
                 f"Radius: {st_rad} Solar radii."
             )
+            # Speak button for browser TTS
             if st.button("🔊 Read Planet Info", key="read_planet_info_button_unique"):
-                speak_text_via_browser(spoken_text, rate=speech_rate)
+                speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
+
+            # iOS TTS button
+            if st.button("🍏 Read Planet Info (iOS)", key="read_planet_info_ios"):
+                speak_text_for_ios(spoken_text, rate=speech_rate)
 
         with right_col:
             st.markdown(
@@ -739,11 +775,17 @@ with tab3:
             
             
             st.image("assets/Ring_Planet.gif", width=200) 
-            
+            #st.caption("📌 Note: This image is for display purposes only and does not represent the actual planet.") 
+
+            st.markdown(
+                "<p style='text-align:center; font-size: 14px; color: grey;'>📌 Note: This image is for display purposes only and does not represent the actual planet.</p>",
+                unsafe_allow_html=True
+            )            
 
     elif st.session_state.current_random_planet is not None:
         # This part runs if the button was clicked but fetch_random_exoplanet returned None
         st.error("Couldn’t find a planet this time. The galaxy must be busy—try again!")
+
 
     # The 'else' case for 'planet' (when current_random_planet is None at page load)
     # is implicitly handled, as nothing will be displayed if 'if planet:' is false.
@@ -774,8 +816,12 @@ with tab4:
     st.markdown(about_text)
     if st.button("🔊 Speak Intro", key="tts_intro"):
         speak_text_via_browser(about_text, rate=speech_rate)
+    if st.button("🍏 Speak Intro (iOS)", key="tts_intro_ios"):
+        speak_text_for_ios(about_text, rate=speech_rate)
 
     # 📝 Purpose section
     st.markdown(purpose_text_display)
     if st.button("🔊 Speak Purpose", key="tts_purpose"):
         speak_text_via_browser(purpose_text_spoken, rate=speech_rate)
+    if st.button("🍏 Speak Purpose (iOS)", key="tts_purpose_ios"):
+        speak_text_for_ios(purpose_text_spoken, rate=speech_rate)
