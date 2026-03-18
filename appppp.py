@@ -37,11 +37,11 @@ with st.sidebar:
 st.session_state.speech_rate = speech_rate
 st.caption(f"🔊 Current speed: {speech_rate}x")
 
-    st.markdown("---")
-    st.subheader("📽️ Presentation Tools")
+st.markdown("---")
+st.subheader("📽️ Presentation Tools")
     
-    # Presentation Mode toggle, directly updates session state
-    st.session_state.presentation_mode = st.toggle(
+# Presentation Mode toggle, directly updates session state
+st.session_state.presentation_mode = st.toggle(
         "✨ Presentation Mode", 
         value=st.session_state.presentation_mode, # Use current session state value
         help="Adjusts chart fonts, colors, and layouts for better visibility during presentations."
