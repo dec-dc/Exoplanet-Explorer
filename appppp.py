@@ -656,23 +656,53 @@ with tab1:
 
 
 # --- Predict Tab ---
+# --- Predict Tab ---
 with tab2:
     st.header("🔮 Predict Host Star Temperature")
     
-    # 1. The Instructions
     description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
-    st.info(description)
+    st.markdown(description)
 
-    # 2. CREATE the variables (Sliders)
-    # These must be inside tab2 so 'distance' is defined here
-    distance = st.slider("Distance (pc)", 0.0, 10000.0, 100.0)
-    radius = st.slider("Planetary Radius (Earth Radii)", 0.0, 30.0, 1.0)
-    mass = st.slider("Planetary Mass (Earth Masses)", 0.0, 5000.0, 1.0)
-    star_mass = st.slider("Star Mass (Solar Masses)", 0.0, 10.0, 1.0)
-    period = st.slider("Orbital Period (days)", 0.0, 5000.0, 365.0)
+    # 1. Dropdown for planet selection (Restored)
+    planet_names = [""] + sorted(df["Planet name"].dropna().unique().tolist())
+    selected_planet = st.selectbox("📌 Choose an exoplanet (optional):", planet_names)
 
-    # 3. The Prediction Button
+    # Default values logic
+    defaults = {
+        'distance': 500.0, 'radius': 1.0, 'mass': 1.0, 
+        'star_mass': 1.0, 'period': 365.0
+    }
+
+    if selected_planet:
+        planet_data = df[df["Planet name"] == selected_planet].iloc[0]
+        defaults['distance'] = float(planet_data.get('distance (clean)', defaults['distance']))
+        defaults['radius'] = float(planet_data.get('radius (clean)', defaults['radius']))
+        defaults['mass'] = float(planet_data.get('mass (clean)', defaults['mass']))
+        defaults['star_mass'] = float(planet_data.get('star mass (clean)', defaults['star_mass']))
+        defaults['period'] = float(planet_data.get('Period (days)', defaults['period']))
+
+        # Show discovery details
+        st.markdown("### 🪐 Planet Details")
+        st.markdown(f"- **Discovery Method:** {planet_data['Discovery method']}")
+        st.markdown(f"- **Discovery Year:** {int(planet_data['Disc. Year']) if pd.notna(planet_data['Disc. Year']) else 'Unknown'}")
+        st.markdown(f"- **Host Star Temperature:** {int(planet_data['star temp (clean)'])} K")
+        st.markdown(f"- **Stellar Type:** {planet_data['Stellar Type']}")
+        st.markdown("---")
+        st.info("🔄 Values below are pre-filled. Feel free to tweak them.")
+
+    # 2. Sliders for input (Now correctly defined before the prediction)
+    col1, col2 = st.columns(2)
+    with col1:
+        distance = st.slider("Distance (ly)", 0.0, 12000.0, defaults['distance'])
+        radius = st.slider("Planet Radius (RJ)", 0.0, 3.0, defaults['radius'])
+        mass = st.slider("Planet Mass (MJ)", 0.0, 40.0, defaults['mass'])
+    with col2:
+        star_mass = st.slider("Host Star Mass (M☉)", 0.1, 5.0, defaults['star_mass'])
+        period = st.slider("Orbital Period (days)", 0.1, 5000.0, defaults['period'])
+
+    # 3. The Prediction Logic
     if st.button("Predict Star Temperature"):
+        # This matches the features your model expects
         input_data = {
             'distance (clean)': distance,
             'radius (clean)': radius,
@@ -692,17 +722,19 @@ with tab2:
         input_df = pd.DataFrame([input_data], columns=features_ordered)
         prediction = model.predict(input_df)
 
-        # Save result to session state
+        # Save result to session state so it stays visible
         st.session_state.predicted_temp = prediction[0]
 
-    # 4. Show results and Speak (Only after prediction is made)
+    # 4. Results and Universal Speech (Only shows after clicking Predict)
     if "predicted_temp" in st.session_state:
         temp = st.session_state.predicted_temp
         st.success(f"🌟 Predicted Host Star Temperature: **{temp:.0f} K**")
 
+        # Full text for accessibility
         spoken_text = f"{description} The predicted host star temperature is {temp:.0f} Kelvin."
 
         if st.button("🔊 Speak Prediction"):
+            # Works on Windows/Android/Apple
             speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
             speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
 
