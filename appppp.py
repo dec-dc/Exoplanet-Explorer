@@ -595,10 +595,13 @@ def plot_discovery_swarm_over_time(df):
             st.metric("🗓️ Range of Years", "N/A")
 
     description = "This swarm plot shows how discovery methods have evolved over time."
-    display_chart_subtitle("discovery_swarm", description)
+
+    # FIXED: add a context so the key is unique
+    display_chart_subtitle("discovery_swarm", description, context="swarm_section")
 
     # iOS-specific button for TTS
     speak_text_for_ios(description, rate=speech_rate)
+
 
 
 # --- Main App ---
