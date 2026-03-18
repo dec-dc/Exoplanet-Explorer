@@ -714,14 +714,7 @@ with tab2:
         speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
         speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
 
-    ### description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
-    ### display_chart_subtitle("discovery_swarm", description) 
 
-    # Normal subtitle and TTS button
-    ###display_chart_subtitle("Predict", description)
-
-    # iOS-specific button for TTS
-    ### speak_text_for_ios(description, rate=speech_rate) ###
 
 
 # --- Discover Tab (Content for tab3 from st.tabs) ---
