@@ -699,36 +699,29 @@ with tab2:
 
     # Prediction
     if st.button("Predict Star Temperature"):
-        input_data = { ... }
-        input_df = pd.DataFrame([input_data], columns=features_ordered)
         prediction = model.predict(input_df)
+        st.session_state.predicted_temp = prediction[0]
 
-    predicted_temp = prediction[0]
-
-    st.success(f"🌟 Predicted Host Star Temperature: **{predicted_temp:.0f} K**")
-
-    # description
-    description = "This prediction estimates the temperature of the host star based on the selected planetary inputs."
+    if "predicted_temp" in st.session_state:
+        st.success(f"🌟 Predicted Host Star Temperature: **{st.session_state.predicted_temp:.0f} K**")
 
     spoken_text = (
-        f"{description} "
-        f"The predicted host star temperature is {predicted_temp:.0f} Kelvin."
+        f"Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature. "
+        f"The predicted host star temperature is {st.session_state.predicted_temp:.0f} Kelvin."
     )
 
-    display_chart_subtitle("prediction", spoken_text)
+    if st.button("🔊 Speak Prediction"):
+        speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
+        speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
 
-    # TTS
-    speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
-    speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
-
-    description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
-    display_chart_subtitle("discovery_swarm", description)
+    ### description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
+    ### display_chart_subtitle("discovery_swarm", description) 
 
     # Normal subtitle and TTS button
-    display_chart_subtitle("Predict", description)
+    ###display_chart_subtitle("Predict", description)
 
     # iOS-specific button for TTS
-    speak_text_for_ios(description, rate=speech_rate)
+    ### speak_text_for_ios(description, rate=speech_rate) ###
 
 
 # --- Discover Tab (Content for tab3 from st.tabs) ---
