@@ -699,25 +699,29 @@ with tab2:
 
     # Prediction
     if st.button("Predict Star Temperature"):
-        input_data = {
-            'distance (clean)': distance,
-            'radius (clean)': radius,
-            'Distance_Radius_Interaction': distance * radius,
-            'mass (clean)': mass,
-            'star mass (clean)': star_mass,
-            'Period (days)': period,
-            'Mass_x_Radius': mass * radius,
-            'Log_Period': np.log1p(period)
-        }
-        features_ordered = [
-            'distance (clean)', 'radius (clean)', 'Distance_Radius_Interaction', 'mass (clean)', 
-            'star mass (clean)', 'Period (days)', 'Mass_x_Radius', 'Log_Period'
-        ]
+        input_data = { ... }
         input_df = pd.DataFrame([input_data], columns=features_ordered)
         prediction = model.predict(input_df)
-        st.success(f"🌟 Predicted Host Star Temperature: **{prediction[0]:.0f} K**")
 
-    description = "This swarm plot shows how discovery methods have evolved over time."
+    predicted_temp = prediction[0]
+
+    st.success(f"🌟 Predicted Host Star Temperature: **{predicted_temp:.0f} K**")
+
+    # description
+    description = "This prediction estimates the temperature of the host star based on the selected planetary inputs."
+
+    spoken_text = (
+        f"{description} "
+        f"The predicted host star temperature is {predicted_temp:.0f} Kelvin."
+    )
+
+    display_chart_subtitle("prediction", spoken_text)
+
+    # TTS
+    speak_text_via_browser(spoken_text, rate=st.session_state.speech_rate)
+    speak_text_for_ios(spoken_text, rate=st.session_state.speech_rate)
+
+    description = "Select an exoplanet to pre-fill its values, or adjust the sliders manually to predict the host star's temperature."
     display_chart_subtitle("discovery_swarm", description)
 
     # Normal subtitle and TTS button
